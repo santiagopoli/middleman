@@ -1,0 +1,8 @@
+language: bash
+services: docker
+env:
+- VERSION=latest
+script:
+- docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+- docker build . -t "santiagopoli/middleman:$VERSION"
+- docker push "santiagopoli/middleman:$VERSION"
