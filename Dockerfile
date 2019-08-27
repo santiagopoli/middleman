@@ -10,6 +10,7 @@ COPY go.mod .
 COPY go.sum .
 RUN go get
 
+COPY internal internal
 COPY main.go .
 RUN go build -ldflags="-s -w" -o middleman main.go
 RUN chmod +x middleman
