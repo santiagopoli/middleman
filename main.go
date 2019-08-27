@@ -11,6 +11,7 @@ func main() {
 	authorizer := authorizer.NewOPAAuthorizer("http://localhost:8181/v1/data/ingress/allow?partial")
 	authorizeRequest := http.AuthorizeRequest(authorizer)
 	e := echo.New()
+	e.HideBanner = true
 	e.Use(middleware.Logger())
 	e.POST("/authz", authorizeRequest)
 	e.GET("/authz", authorizeRequest)
