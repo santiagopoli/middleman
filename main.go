@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	authorizer := authorizer.NewOPAAuthorizer("http://localhost:8181/v1/data/ingress/allow?partial")
+	authorizer := authorizer.NewOPAAuthorizer("localhost:8181", "ingress/allow", true)
 	authorizeRequest := http.AuthorizeRequest(authorizer)
 	e := echo.New()
 	e.HideBanner = true

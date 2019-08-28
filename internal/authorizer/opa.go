@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 type OPAAuthorizer struct {
-	opaURL string
+	host              string
+	rule              string
+	partialEvaluation bool
 }
 
 type opaResponse struct {
@@ -31,7 +34,7 @@ func (opa OPAAuthorizer) IsAuthorized(request *Request) bool {
 		panic(errm)
 	}
 
-	authResponse, errp := http.Post(opa.opaURL, "application/json", bytes.NewBuffer(authPayloadAsJSON))
+	authResponse, errp := http.Post(buildURL(opa), "application/json", bytes.NewBuffer(authPayloadAsJSON))
 	if errp != nil {
 		panic(errp)
 	}
@@ -59,6 +62,10 @@ func toOPAPayload(request *Request) *opaPayload {
 	}
 }
 
-func NewOPAAuthorizer(opaURL string) *OPAAuthorizer {
-	return &OPAAuthorizer{opaURL: opaURL}
+func NewOPAAuthorizer(opaHost string, rule string, partialEvaluation bool) *OPAAuthorizer {
+	return &OPAAuthorizer{host: opaHost, rule: rule, partialEvaluation: partialEvaluation}
+}
+
+func buildURL(opa OPAAuthorizer) string {
+	return "http://" + opa.host + "/v1/data/" + opa.rule + "?partial=" + strconv.FormatBool(opa.partialEvaluation)
 }
