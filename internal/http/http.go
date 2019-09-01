@@ -31,7 +31,7 @@ func addAdditionalHeaders(headers http.Header) http.Header {
 }
 
 func StartServer() {
-	authorizer := authorizer.NewOPAAuthorizer("localhost:8181", "ingress/allow", true)
+	authorizer := authorizer.NewOPAAuthorizer("localhost:8181", "ingress/allow", false)
 	authorizeRequest := authorizeRequest(authorizer)
 	e := echo.New()
 	e.HideBanner = true
