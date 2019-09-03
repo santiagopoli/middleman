@@ -31,8 +31,8 @@ func addAdditionalHeaders(headers http.Header) http.Header {
 	return headers
 }
 
-func StartServer() {
-	authorizer := authorizer.NewOPAAuthorizer("localhost:8181", "ingress/allow", false)
+func StartServer(opaHost string, opaDefaultPolicy string, opaUsePartialEvaluation bool) {
+	authorizer := authorizer.NewOPAAuthorizer(opaHost, opaDefaultPolicy, opaUsePartialEvaluation)
 	authorizeRequest := authorizeRequest(authorizer)
 	router := chi.NewRouter()
 
