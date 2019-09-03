@@ -28,13 +28,13 @@ type opaPayload struct {
 	Input *opaPayloadInput `json:"input"`
 }
 
-func (opa OPAAuthorizer) IsAuthorized(request *Request) bool {
+func (opaAuthorizer OPAAuthorizer) IsAuthorized(request *Request) bool {
 	authPayloadAsJSON, errm := json.Marshal(toOPAPayload(request))
 	if errm != nil {
 		panic(errm)
 	}
 
-	authResponse, errp := http.Post(buildURL(opa), "application/json", bytes.NewBuffer(authPayloadAsJSON))
+	authResponse, errp := http.Post(buildURL(opaAuthorizer), "application/json", bytes.NewBuffer(authPayloadAsJSON))
 	if errp != nil {
 		panic(errp)
 	}
@@ -66,6 +66,6 @@ func NewOPAAuthorizer(opaHost string, rule string, partialEvaluation bool) *OPAA
 	return &OPAAuthorizer{host: opaHost, rule: rule, partialEvaluation: partialEvaluation}
 }
 
-func buildURL(opa OPAAuthorizer) string {
-	return "http://" + opa.host + "/v1/data/" + opa.rule + "?partial=" + strconv.FormatBool(opa.partialEvaluation)
+func buildURL(opaAuthorizer OPAAuthorizer) string {
+	return "http://" + opaAuthorizer.host + "/v1/data/" + opaAuthorizer.rule + "?partial=" + strconv.FormatBool(opaAuthorizer.partialEvaluation)
 }
