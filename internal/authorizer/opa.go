@@ -19,6 +19,7 @@ type opaResponse struct {
 }
 
 type opaPayloadInput struct {
+	Host    string      `json:"host"`
 	Method  string      `json:"method"`
 	Path    string      `json:"path"`
 	Headers http.Header `json:"headers"`
@@ -55,6 +56,7 @@ func (opaAuthorizer OPAAuthorizer) IsAuthorized(request *Request) bool {
 func toOPAPayload(request *Request) *opaPayload {
 	return &opaPayload{
 		Input: &opaPayloadInput{
+			Host:    request.Host,
 			Method:  request.Method,
 			Path:    request.Path,
 			Headers: request.Headers,
@@ -62,10 +64,10 @@ func toOPAPayload(request *Request) *opaPayload {
 	}
 }
 
-func NewOPAAuthorizer(opaHost string, rule string, partialEvaluation bool) *OPAAuthorizer {
-	return &OPAAuthorizer{host: opaHost, rule: rule, partialEvaluation: partialEvaluation}
-}
-
 func buildURL(opaAuthorizer OPAAuthorizer) string {
 	return "http://" + opaAuthorizer.host + "/v1/data/" + opaAuthorizer.rule + "?partial=" + strconv.FormatBool(opaAuthorizer.partialEvaluation)
+}
+
+func NewOPAAuthorizer(opaHost string, rule string, partialEvaluation bool) *OPAAuthorizer {
+	return &OPAAuthorizer{host: opaHost, rule: rule, partialEvaluation: partialEvaluation}
 }

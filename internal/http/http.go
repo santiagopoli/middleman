@@ -8,9 +8,26 @@ import (
 	"github.com/santiagopoli/middleman/internal/authorizer"
 )
 
-func authorizeRequest(authorizer authorizer.Authorizer) func(http.ResponseWriter, *http.Request) {
+type ServerConfig struct {
+	MiddlewareConfig *MiddlewareConfig
+	OPAConfig        *OPAConfig
+}
+
+type MiddlewareConfig struct {
+	HostHeader   string
+	MethodHeader string
+	PathHeader   string
+}
+
+type OPAConfig struct {
+	Host                 string
+	DefaultPolicy        string
+	UsePartialEvaluation bool
+}
+
+func authorizeRequest(middlewareConfig *MiddlewareConfig, authorizer authorizer.Authorizer) func(http.ResponseWriter, *http.Request) {
 	return func(response http.ResponseWriter, request *http.Request) {
-		authzRequestPayload := payloadFrom(request)
+		authzRequestPayload := payloadFrom(request, middlewareConfig)
 		if authorizer.IsAuthorized(authzRequestPayload) {
 			response.WriteHeader(http.StatusOK)
 		} else {
@@ -19,10 +36,11 @@ func authorizeRequest(authorizer authorizer.Authorizer) func(http.ResponseWriter
 	}
 }
 
-func payloadFrom(request *http.Request) *authorizer.Request {
+func payloadFrom(request *http.Request, middlewareConfig *MiddlewareConfig) *authorizer.Request {
 	return &authorizer.Request{
-		Method:  request.Header.Get("X-Original-Method"),
-		Path:    request.Header.Get("X-Original-Uri"),
+		Host:    request.Header.Get(middlewareConfig.HostHeader),
+		Method:  request.Header.Get(middlewareConfig.MethodHeader),
+		Path:    request.Header.Get(middlewareConfig.PathHeader),
 		Headers: addAdditionalHeaders(request.Header),
 	}
 }
@@ -31,9 +49,13 @@ func addAdditionalHeaders(headers http.Header) http.Header {
 	return headers
 }
 
-func StartServer(opaHost string, opaDefaultPolicy string, opaUsePartialEvaluation bool) {
-	authorizer := authorizer.NewOPAAuthorizer(opaHost, opaDefaultPolicy, opaUsePartialEvaluation)
-	authorizeRequest := authorizeRequest(authorizer)
+func StartServer(serverConfig *ServerConfig) {
+	authorizer := authorizer.NewOPAAuthorizer(
+		serverConfig.OPAConfig.Host,
+		serverConfig.OPAConfig.DefaultPolicy,
+		serverConfig.OPAConfig.UsePartialEvaluation,
+	)
+	authorizeRequest := authorizeRequest(serverConfig.MiddlewareConfig, authorizer)
 	router := chi.NewRouter()
 
 	router.Post("/authz", authorizeRequest)

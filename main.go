@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/santiagopoli/middleman/internal/http"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 func main() {
@@ -13,24 +12,41 @@ func main() {
 		Short: "Authz Middleware powered by Open Policy Agent",
 		Run:   startServer(),
 	}
+	rootCmd.Flags().String("middleware.HostHeader", "X-Original-Host", "Header to use as Host")
+	rootCmd.Flags().String("middleware.MethodHeader", "X-Original-Method", "Header to use as Method")
+	rootCmd.Flags().String("middleware.PathHeader", "X-Original-Uri", "Header to use as Path")
 	rootCmd.Flags().String("opa.Host", "localhost:8181", "Location of the OPA Server")
 	rootCmd.Flags().String("opa.DefaultPolicy", "ingress/allow", "Default Policy to Use")
 	rootCmd.Flags().Bool("opa.UsePartialEvaluation", false, "Use partial evaluation for Policy checks")
+
 	rootCmd.Execute()
 }
 
 func startServer() func(*cobra.Command, []string) {
 	return func(cmd *cobra.Command, args []string) {
-		opaHost, _ := cmd.Flags().GetString("opa.Host")
-		opaDefaultPolicy, _ := cmd.Flags().GetString("opa.DefaultPolicy")
-		opaUsePartialEvaluation, _ := cmd.Flags().GetBool("opa.UsePartialEvaluation")
-		PrintBanner()
-		http.StartServer(opaHost, opaDefaultPolicy, opaUsePartialEvaluation)
+		http.StartServer(buildConfigFromFlags(cmd.Flags()))
 	}
 }
 
-func PrintBanner() {
-	fmt.Println("Middleman!")
-	fmt.Println("Made with ♥ by @santiagopoli")
-	fmt.Println("")
+func buildConfigFromFlags(flags *pflag.FlagSet) *http.ServerConfig {
+	middlewareHostHeader, _ := flags.GetString("middleware.HostHeader")
+	middlewareMethodHeader, _ := flags.GetString("middleware.MethodHeader")
+	middlewarePathHeader, _ := flags.GetString("middleware.PathHeader")
+
+	opaHost, _ := flags.GetString("opa.Host")
+	opaDefaultPolicy, _ := flags.GetString("opa.DefaultPolicy")
+	opaUsePartialEvaluation, _ := flags.GetBool("opa.UsePartialEvaluation")
+
+	return &http.ServerConfig{
+		MiddlewareConfig: &http.MiddlewareConfig{
+			HostHeader:   middlewareHostHeader,
+			MethodHeader: middlewareMethodHeader,
+			PathHeader:   middlewarePathHeader,
+		},
+		OPAConfig: &http.OPAConfig{
+			Host:                 opaHost,
+			DefaultPolicy:        opaDefaultPolicy,
+			UsePartialEvaluation: opaUsePartialEvaluation,
+		},
+	}
 }
