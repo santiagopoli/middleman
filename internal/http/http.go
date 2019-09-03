@@ -1,20 +1,21 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/labstack/echo/middleware"
-	"github.com/labstack/echo"
+	"github.com/go-chi/chi"
 	"github.com/santiagopoli/middleman/internal/authorizer"
 )
 
-func authorizeRequest(authorizer authorizer.Authorizer) func(echo.Context) error {
-	return func(requestContext echo.Context) error {
-		authzRequestPayload := payloadFrom(requestContext.Request())
+func authorizeRequest(authorizer authorizer.Authorizer) func(http.ResponseWriter, *http.Request) {
+	return func(response http.ResponseWriter, request *http.Request) {
+		authzRequestPayload := payloadFrom(request)
 		if authorizer.IsAuthorized(authzRequestPayload) {
-			return requestContext.NoContent(http.StatusOK)
+			response.WriteHeader(http.StatusOK)
+		} else {
+			response.WriteHeader(http.StatusUnauthorized)
 		}
-		return requestContext.String(http.StatusUnauthorized, "Unauthorized")
 	}
 }
 
@@ -33,11 +34,11 @@ func addAdditionalHeaders(headers http.Header) http.Header {
 func StartServer() {
 	authorizer := authorizer.NewOPAAuthorizer("localhost:8181", "ingress/allow", false)
 	authorizeRequest := authorizeRequest(authorizer)
-	e := echo.New()
-	e.HideBanner = true
-	e.Use(middleware.Logger())
-	e.POST("/authz", authorizeRequest)
-	e.GET("/authz", authorizeRequest)
+	router := chi.NewRouter()
 
-	e.Logger.Fatal(e.Start(":8080"))
+	router.Post("/authz", authorizeRequest)
+	router.Get("/authz", authorizeRequest)
+
+	fmt.Println("Server Listening on :8080")
+	http.ListenAndServe(":8080", router)
 }
