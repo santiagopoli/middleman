@@ -3,9 +3,11 @@ package authorizer
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type OPAAuthorizer struct {
@@ -19,10 +21,10 @@ type opaResponse struct {
 }
 
 type opaPayloadInput struct {
-	Host    string      `json:"host"`
-	Method  string      `json:"method"`
-	Path    string      `json:"path"`
-	Headers http.Header `json:"headers"`
+	Host    string              `json:"host"`
+	Method  string              `json:"method"`
+	Path    []string            `json:"path"`
+	Headers map[string][]string `json:"headers"`
 }
 
 type opaPayload struct {
@@ -31,6 +33,7 @@ type opaPayload struct {
 
 func (opaAuthorizer OPAAuthorizer) IsAuthorized(request *Request) bool {
 	authPayloadAsJSON, errm := json.Marshal(toOPAPayload(request))
+	fmt.Println(string(authPayloadAsJSON))
 	if errm != nil {
 		panic(errm)
 	}
@@ -58,7 +61,7 @@ func toOPAPayload(request *Request) *opaPayload {
 		Input: &opaPayloadInput{
 			Host:    request.Host,
 			Method:  request.Method,
-			Path:    request.Path,
+			Path:    splitPath(request.Path),
 			Headers: request.Headers,
 		},
 	}
@@ -66,6 +69,10 @@ func toOPAPayload(request *Request) *opaPayload {
 
 func buildURL(opaAuthorizer OPAAuthorizer) string {
 	return "http://" + opaAuthorizer.host + "/v1/data/" + opaAuthorizer.rule + "?partial=" + strconv.FormatBool(opaAuthorizer.partialEvaluation)
+}
+
+func splitPath(path string) []string {
+	return strings.Split(path, "/")[1:]
 }
 
 func NewOPAAuthorizer(opaHost string, rule string, partialEvaluation bool) *OPAAuthorizer {
