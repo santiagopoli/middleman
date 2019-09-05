@@ -3,7 +3,6 @@ package authorizer
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -33,7 +32,6 @@ type opaPayload struct {
 
 func (opaAuthorizer OPAAuthorizer) IsAuthorized(request *Request) bool {
 	authPayloadAsJSON, errm := json.Marshal(toOPAPayload(request))
-	fmt.Println(string(authPayloadAsJSON))
 	if errm != nil {
 		panic(errm)
 	}
