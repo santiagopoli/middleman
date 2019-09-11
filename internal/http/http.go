@@ -9,6 +9,7 @@ import (
 )
 
 type ServerConfig struct {
+	Port             string
 	MiddlewareConfig *MiddlewareConfig
 	OPAConfig        *OPAConfig
 }
@@ -61,6 +62,6 @@ func StartServer(serverConfig *ServerConfig) {
 	router.Post("/authz", authorizeRequest)
 	router.Get("/authz", authorizeRequest)
 
-	fmt.Println("Server Listening on :8080")
-	http.ListenAndServe(":8080", router)
+	fmt.Println("Server listening on", serverConfig.Port)
+	http.ListenAndServe(fmt.Sprintf(":%s", serverConfig.Port), router)
 }

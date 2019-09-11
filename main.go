@@ -12,6 +12,7 @@ func main() {
 		Short: "Authz Middleware powered by Open Policy Agent",
 		Run:   startServer(),
 	}
+	rootCmd.Flags().String("port", "8121", "Port to listen requests")
 	rootCmd.Flags().String("middleware.HostHeader", "X-Original-Host", "Header to use as Host")
 	rootCmd.Flags().String("middleware.MethodHeader", "X-Original-Method", "Header to use as Method")
 	rootCmd.Flags().String("middleware.PathHeader", "X-Original-Uri", "Header to use as Path")
@@ -29,6 +30,8 @@ func startServer() func(*cobra.Command, []string) {
 }
 
 func buildConfigFromFlags(flags *pflag.FlagSet) *http.ServerConfig {
+	serverPort, _ := flags.GetString("port")
+
 	middlewareHostHeader, _ := flags.GetString("middleware.HostHeader")
 	middlewareMethodHeader, _ := flags.GetString("middleware.MethodHeader")
 	middlewarePathHeader, _ := flags.GetString("middleware.PathHeader")
@@ -38,6 +41,7 @@ func buildConfigFromFlags(flags *pflag.FlagSet) *http.ServerConfig {
 	opaUsePartialEvaluation, _ := flags.GetBool("opa.UsePartialEvaluation")
 
 	return &http.ServerConfig{
+		Port: serverPort,
 		MiddlewareConfig: &http.MiddlewareConfig{
 			HostHeader:   middlewareHostHeader,
 			MethodHeader: middlewareMethodHeader,
