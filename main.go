@@ -13,9 +13,9 @@ func main() {
 		Run:   startServer(),
 	}
 	rootCmd.Flags().String("port", "8121", "Port to listen requests")
-	rootCmd.Flags().String("middleware.HostHeader", "X-Original-Host", "Header to use as Host")
-	rootCmd.Flags().String("middleware.MethodHeader", "X-Original-Method", "Header to use as Method")
-	rootCmd.Flags().String("middleware.PathHeader", "X-Original-Uri", "Header to use as Path")
+	rootCmd.Flags().String("middleware.HostHeader", "X-Forwarded-Host", "Header to use as Host")
+	rootCmd.Flags().String("middleware.MethodHeader", "X-Forwarded-Method", "Header to use as Method")
+	rootCmd.Flags().String("middleware.PathHeader", "X-Forwarded-Uri", "Header to use as Path")
 	rootCmd.Flags().String("opa.Host", "localhost:8181", "Location of the OPA Server")
 	rootCmd.Flags().String("opa.DefaultPolicy", "ingress/allow", "Default Policy to Use")
 	rootCmd.Flags().Bool("opa.UsePartialEvaluation", false, "Use partial evaluation for Policy checks")
