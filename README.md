@@ -3,3 +3,5 @@
 # Middleman
 
 ### An Authz Middleware powered by Open Policy Agent
+
+![Logo](https://raw.githubusercontent.com/santiagopoli/middleman/master/static/logo.png | width=250)
