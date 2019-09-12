@@ -33,6 +33,8 @@ func authorizeRequest(middlewareConfig *MiddlewareConfig, authorizer authorizer.
 			response.WriteHeader(http.StatusOK)
 		} else {
 			response.WriteHeader(http.StatusUnauthorized)
+			response.Header().Add("Cache-Control", "no-cache, no-store")
+			response.Write([]byte("Unauthorized"))
 		}
 	}
 }
