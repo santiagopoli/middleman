@@ -61,8 +61,8 @@ func StartServer(serverConfig *ServerConfig) {
 	authorizeRequest := authorizeRequest(serverConfig.MiddlewareConfig, authorizer)
 	router := chi.NewRouter()
 
-	router.Post("/authz", authorizeRequest)
-	router.Get("/authz", authorizeRequest)
+	router.Post("/", authorizeRequest)
+	router.Get("/", authorizeRequest)
 
 	fmt.Println("Server listening on", serverConfig.Port)
 	http.ListenAndServe(fmt.Sprintf(":%s", serverConfig.Port), router)
